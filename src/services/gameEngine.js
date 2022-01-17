@@ -7,6 +7,7 @@ class GameEngine {
     static isDemoMode = false;
     static SESSIONS_FILE_PATH = path.join(__dirname, "../", "data", "sessions.json");
     static WORDS_FILE_PATH = path.join(__dirname, "../", "data", "words.json");
+    static WORDS_DICTIONARY_FILE_PATH = path.join(__dirname, "../", "data", "words_dictionary.json");
 
     static generateRandomId() {
         return nanoid();
@@ -19,7 +20,7 @@ class GameEngine {
             const dataset = JSON.parse(fs.readFileSync(this.WORDS_FILE_PATH));
             let isFound = false;
             let word;
-            while(!isFound) {
+            while (!isFound) {
                 const index = Math.floor(Math.random() * dataset.length);
                 word = dataset[index].word.value;
                 console.log("Word is", word);
@@ -27,7 +28,7 @@ class GameEngine {
                     isFound = true;
                 }
             }
-            
+
             return this.createNewSession(word);
         }
     }
@@ -76,8 +77,8 @@ class GameEngine {
         if (this.isDemoMode) {
             return Promise.resolve(true);
         } else {
-            const response = await axios.get("https://api.dictionaryapi.dev/api/v2/entries/en/" + word.toLowerCase());
-            if (Array.isArray(response.data)) {
+            const dictionary = JSON.parse(fs.readFileSync(this.WORDS_DICTIONARY_FILE_PATH));
+            if (dictionary[word.toLowerCase()]) {
                 return true;
             } else {
                 return false;
