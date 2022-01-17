@@ -15,6 +15,9 @@
   "devDependencies": {
     "nodemon": "^2.0.15"
   },
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
     "start": "nodemon ./src/index.js"
   },
