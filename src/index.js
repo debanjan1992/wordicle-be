@@ -8,6 +8,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get("/api/healthcheck", (req, res) => {
+    res.json({
+        success: true,
+        message: "We are up and running!"
+    });
+});
+
 app.get("/api/word", (req, res) => {
     const sessionId = req.query.sessionId;
     if (sessionId !== "null") {
