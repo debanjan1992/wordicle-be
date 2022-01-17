@@ -1,12 +1,19 @@
 const express = require("express");
-const cors = require("cors");
-const PORT = process.env.PORT || 4000;
 const GameEngine = require("./services/gameEngine");
 const bodyParser = require("body-parser");
+const dotenv = require('dotenv');
+const cors = require('cors');
+dotenv.config();
+
+GameEngine.isDemoMode = process.env.DEMO_MODE === "true";
+
+const PORT = process.env.PORT;
 
 const app = express();
-app.use(cors());
 app.use(bodyParser.json());
+app.use(cors({
+    origin: ["http://localhost:3000", "https://debanjan1992.github.io/wordicle-fe"]
+}));
 
 app.get("/api/healthcheck", (req, res) => {
     res.json({
@@ -42,4 +49,6 @@ app.post("/api/submit", (req, res) => {
     })
 });
 
-app.listen(PORT, () => `Server running on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

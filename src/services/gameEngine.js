@@ -2,10 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const { nanoid } = require("nanoid");
-
 class GameEngine {
 
-    static isDemoMode = true;
+    static isDemoMode = false;
     static SESSIONS_FILE_PATH = path.join(__dirname, "../", "data", "sessions.json");
     static WORDS_FILE_PATH = path.join(__dirname, "../", "data", "words.json");
 
@@ -18,8 +17,17 @@ class GameEngine {
             return this.createNewSession("CACTUS");
         } else {
             const dataset = JSON.parse(fs.readFileSync(this.WORDS_FILE_PATH));
-            const index = Math.floor(Math.random() * dataset.length);
-            const word = dataset[index].word.value;
+            let isFound = false;
+            let word;
+            while(!isFound) {
+                const index = Math.floor(Math.random() * dataset.length);
+                word = dataset[index].word.value;
+                console.log("Word is", word);
+                if (word.length > 3 && word.length <= 7) {
+                    isFound = true;
+                }
+            }
+            
             return this.createNewSession(word);
         }
     }
@@ -46,7 +54,7 @@ class GameEngine {
         const id = this.generateRandomId();
         const sessions = JSON.parse(fs.readFileSync(this.SESSIONS_FILE_PATH));
         if (!sessions[id]) {
-            sessions[id] = word;
+            sessions[id] = word.toUpperCase();
         }
         fs.writeFileSync(this.SESSIONS_FILE_PATH, JSON.stringify(sessions, null, 4));
         return {
