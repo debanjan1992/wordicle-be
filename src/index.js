@@ -22,6 +22,14 @@ app.get("/api/healthcheck", (req, res) => {
     });
 });
 
+app.get("/api/reveal", (req, res) => {
+    const sessionId = req.query.sessionId;
+    res.json({
+        success: true,
+        data: GameEngine.getWordFromSession(sessionId)
+    });
+});
+
 app.get("/api/word", (req, res) => {
     const sessionId = req.query.sessionId;
     if (sessionId !== "null") {
