@@ -23,7 +23,6 @@ class GameEngine {
             while (!isFound) {
                 const index = Math.floor(Math.random() * dataset.length);
                 word = dataset[index].word.value;
-                console.log("Word is", word);
                 if (word.length > 3 && word.length <= 7) {
                     isFound = true;
                 }
