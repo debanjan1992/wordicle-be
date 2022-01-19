@@ -4,6 +4,7 @@ const { nanoid } = require("nanoid");
 class GameEngine {
 
     static isDemoMode = false;
+    static DEMO_WORD = "BREAK";
     static SESSIONS_FILE_PATH = path.join(__dirname, "../../", "sessions.json");
     static WORDS_FILE_PATH = path.join(__dirname, "../", "data", "words.json");
     static WORDS_DICTIONARY_FILE_PATH = path.join(__dirname, "../", "data", "words_dictionary.json");
@@ -14,7 +15,7 @@ class GameEngine {
 
     static getRandomWord() {
         if (this.isDemoMode) {
-            return this.createNewSession("CACTUS");
+            return this.createNewSession(this.DEMO_WORD);
         } else {
             const dataset = JSON.parse(fs.readFileSync(this.WORDS_FILE_PATH));
             let isFound = false;
@@ -107,22 +108,25 @@ class GameEngine {
             if (!isValid) {
                 return Promise.reject("Invalid Word");
             } else {
-                const output = [];
-                const word = this.getWordFromSession(sessionId);
-                for (let i = 0; i < word.length; i++) {
-                    const character = word[i];
-                    if (character === answer[i]) {
-                        output[i] = "correct";
-                    } else {
-                        output[i] = "absent";
+                try {
+                    const output = [];
+                    const word = this.getWordFromSession(sessionId);
+                    for (let i = 0; i < word.length; i++) {
+                        const character = word[i];
+                        if (character === answer[i]) {
+                            output[i] = "correct";
+                        } else {
+                            output[i] = "absent";
+                        }
+                        if (output[i] !== "correct" && word.includes(answer[i]) && word.split("").findIndex(l => l === answer[i]) !== i
+                            && this.getCharCountInString(word, character) !== this.getCharCountInString(answer, character)) {
+                            output[i] = "present";
+                        }
                     }
-
-                    if (output[i] !== "correct" && word.includes(answer[i])
-                        && this.getCharCountInString(word, character) !== this.getCharCountInString(answer, character)) {
-                        output[i] = "present";
-                    }
+                    return Promise.resolve(output);
+                } catch (error) {
+                    console.error(error);
                 }
-                return Promise.resolve(output);
             }
         });
     }
