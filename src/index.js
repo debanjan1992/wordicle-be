@@ -60,7 +60,7 @@ app.post("/api/submit", (req, res) => {
     GameEngine.submitAnswer(sessionId, answer).then(response => {
         res.json({ success: true, data: response, word: answer });
     }).catch(error => {
-        res.status(400).json({ success: false, message: "Not found!" });
+        res.status(400).json({ success: false, message: error });
     })
 });
 

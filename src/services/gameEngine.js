@@ -89,15 +89,15 @@ class GameEngine {
     }
 
     static submitAnswer(sessionId, answer) {
+        if (!this.isSessionValid(sessionId)) {
+            return Promise.reject("Invalid Session");
+        }
         return this.isValidWord(answer).then(isValid => {
             if (!isValid) {
-                return Promise.reject(false);
+                return Promise.reject("Invalid Word");
             } else {
                 const output = [];
                 const word = this.getWordFromSession(sessionId);
-                if (word === null) {
-                    return Promise.reject(false);
-                }
                 for (let i = 0; i < word.length; i++) {
                     const character = word[i];
                     if (character === answer[i]) {
