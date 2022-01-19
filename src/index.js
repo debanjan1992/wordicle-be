@@ -7,7 +7,7 @@ const fs = require("fs");
 const path = require("path");
 dotenv.config();
 
-const SESSIONS_FILE_PATH = path.join(__dirname, "../", "data", "sessions.json");
+const SESSIONS_FILE_PATH = path.join(__dirname, "../", "sessions.json");
 if (!fs.existsSync(SESSIONS_FILE_PATH)) {
     fs.writeFileSync(SESSIONS_FILE_PATH, JSON.stringify({}));
 }

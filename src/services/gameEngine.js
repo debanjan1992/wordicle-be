@@ -4,7 +4,7 @@ const { nanoid } = require("nanoid");
 class GameEngine {
 
     static isDemoMode = false;
-    static SESSIONS_FILE_PATH = path.join(__dirname, "../../", "data", "sessions.json");
+    static SESSIONS_FILE_PATH = path.join(__dirname, "../../", "sessions.json");
     static WORDS_FILE_PATH = path.join(__dirname, "../", "data", "words.json");
     static WORDS_DICTIONARY_FILE_PATH = path.join(__dirname, "../", "data", "words_dictionary.json");
 
