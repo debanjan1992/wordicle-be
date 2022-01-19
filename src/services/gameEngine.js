@@ -118,8 +118,7 @@ class GameEngine {
                         } else {
                             output[i] = "absent";
                         }
-                        if (output[i] !== "correct" && word.includes(answer[i]) && word.split("").findIndex(l => l === answer[i]) !== i
-                            && this.getCharCountInString(word, character) !== this.getCharCountInString(answer, character)) {
+                        if (output[i] !== "correct" && word.includes(answer[i])) {
                             output[i] = "present";
                         }
                     }
