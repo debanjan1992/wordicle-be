@@ -88,6 +88,17 @@ class GameEngine {
         }
     }
 
+    static getCharCountInString(word, character) {
+        const letters = word.split("");
+        const count = letters.reduce((sum, l) => {
+            if (l.toLowerCase() === character.toLowerCase()) {
+                sum = sum + 1;
+            }
+            return sum;
+        }, 0);
+        return count;
+    }
+
     static submitAnswer(sessionId, answer) {
         if (!this.isSessionValid(sessionId)) {
             return Promise.reject("Invalid Session");
@@ -106,11 +117,12 @@ class GameEngine {
                         output[i] = "absent";
                     }
 
-                    if (output[i] !== "correct" && word.includes(answer[i])) {
+                    if (output[i] !== "correct" && word.includes(answer[i])
+                        && this.getCharCountInString(word, character) !== this.getCharCountInString(answer, character)) {
                         output[i] = "present";
                     }
                 }
-                return Promise.resolve(Object.values(output));
+                return Promise.resolve(output);
             }
         });
     }
