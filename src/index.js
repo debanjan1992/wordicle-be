@@ -3,7 +3,14 @@ const GameEngine = require("./services/gameEngine");
 const bodyParser = require("body-parser");
 const dotenv = require('dotenv');
 const cors = require('cors');
+const fs = require("fs");
+const path = require("path");
 dotenv.config();
+
+const SESSIONS_FILE_PATH = path.join(__dirname, "../", "data", "sessions.json");
+if (!fs.existsSync(SESSIONS_FILE_PATH)) {
+    fs.writeFileSync(SESSIONS_FILE_PATH, JSON.stringify({}));
+}
 
 GameEngine.isDemoMode = process.env.DEMO_MODE === "true";
 

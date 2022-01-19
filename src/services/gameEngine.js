@@ -1,11 +1,10 @@
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
 const { nanoid } = require("nanoid");
 class GameEngine {
 
     static isDemoMode = false;
-    static SESSIONS_FILE_PATH = path.join(__dirname, "../", "data", "sessions.json");
+    static SESSIONS_FILE_PATH = path.join(__dirname, "../../", "data", "sessions.json");
     static WORDS_FILE_PATH = path.join(__dirname, "../", "data", "words.json");
     static WORDS_DICTIONARY_FILE_PATH = path.join(__dirname, "../", "data", "words_dictionary.json");
 
@@ -43,11 +42,15 @@ class GameEngine {
     }
 
     static isSessionValid(id) {
-        const sessions = JSON.parse(fs.readFileSync(this.SESSIONS_FILE_PATH));
-        if (!sessions[id]) {
-            return false;
+        try {
+            const sessions = JSON.parse(fs.readFileSync(this.SESSIONS_FILE_PATH));
+            if (!sessions[id]) {
+                return false;
+            }
+            return true;
+        } catch {
+            console.error("Invalid Session", id);
         }
-        return true;
     }
 
     static createNewSession(word) {
