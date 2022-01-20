@@ -31,7 +31,7 @@ app.get("/api/healthcheck", (req, res) => {
     res.json({
         success: true,
         message: "We are up and running!",
-        data: data.split("\r\n") || "Log file do not exist"
+        data: data.split("\n") || "Log file do not exist"
     });
 });
 
