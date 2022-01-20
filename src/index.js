@@ -5,6 +5,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const fs = require("fs");
 const path = require("path");
+const SessionsService = require("./services/sessionsService");
+const { nanoid } = require("nanoid");
 dotenv.config();
 
 const SESSIONS_FILE_PATH = path.join(__dirname, "../", "sessions.json");
@@ -28,40 +30,59 @@ app.get("/api/logs", (req, res) => {
 });
 
 app.get("/api/sessions", (req, res) => {
-    let sessions;
-    sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE_PATH));
-    res.json({ sessions: Object.keys(sessions) });
+    SessionsService.getAllSessionDetails(results => {
+        res.json({ sessions: results.length });
+    });
 });
 
 app.get("/api/reveal", (req, res) => {
     const sessionId = req.query.sessionId;
-    res.json({
-        success: true,
-        data: GameEngine.getWordFromSession(sessionId)
-    });
+    SessionsService.getSessionDetails(sessionId, (data) => {
+        res.json({
+            success: true,
+            data: data.word
+        });
+    })
 });
 
 app.get("/api/word", (req, res) => {
-    res.json(GameEngine.getRandomWord());
+    GameEngine.getRandomWord((id, length) => {
+        res.json({ id, length });
+    })
 });
 
 app.get("/api/session/valid", (req, res) => {
-    res.json({ valid: GameEngine.isSessionValid(req.query.id) });
-});
-
-app.get("/api/clear", (req, res) => {
-    GameEngine.clearAllSessions();
-    res.json({ success: true });
+    GameEngine.isSessionValid(req.query.id, (isValid) => res.json({ valid: isValid }))
 });
 
 app.post("/api/submit", (req, res) => {
     const answer = req.body.word;
     const sessionId = req.body.sessionId;
-    GameEngine.submitAnswer(sessionId, answer).then(response => {
-        res.json({ success: true, data: response, word: answer });
-    }).catch(error => {
-        res.status(400).json({ success: false, message: error });
+    GameEngine.submitAnswer(sessionId, answer, (response) => {
+        if (response.success) {
+            res.json({ success: true, data: response.data, word: answer });
+        } else {
+            res.status(400).json({ success: false, message: response.data });
+        }
     })
+});
+
+app.get("/api/cleanSessions", (req, res) => {
+    SessionsService.getAllSessionDetails(sessions => {
+        const currentTimeStamp = new Date().getTime();
+        const sessionsToBeDeleted = [];
+        sessions.forEach(session => {
+            const diffInDays = Math.floor((currentTimeStamp - +session.timestamp) / (1000 * 60 * 60 * 24));
+            if (diffInDays > 0) {
+                sessionsToBeDeleted.push(session.id);
+            }
+        });
+        if (sessionsToBeDeleted.length) {
+            SessionsService.deleteSessions(sessionsToBeDeleted, () => res.json({ success: true, data: sessionsToBeDeleted }));
+        } else {
+            res.json({ success: false, message: "No sessions to be deleted" })
+        }
+    });
 });
 
 app.listen(PORT, () => {
