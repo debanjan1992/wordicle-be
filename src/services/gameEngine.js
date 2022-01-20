@@ -1,6 +1,17 @@
 const fs = require("fs");
 const path = require("path");
 const { nanoid } = require("nanoid");
+const log4js = require("log4js");
+log4js.configure({
+    appenders: {
+        wordicle: { type: "file", filename: "info.log" },
+    },
+    categories: {
+        default: { appenders: ["wordicle"], level: "info" },
+    }
+});
+
+const logger = log4js.getLogger("wordicleError");
 class GameEngine {
 
     static isDemoMode = false;
@@ -14,21 +25,24 @@ class GameEngine {
     }
 
     static getRandomWord() {
-        if (this.isDemoMode) {
-            return this.createNewSession(this.DEMO_WORD);
-        } else {
-            const dataset = JSON.parse(fs.readFileSync(this.WORDS_FILE_PATH));
-            let isFound = false;
-            let word;
-            while (!isFound) {
-                const index = Math.floor(Math.random() * dataset.length);
-                word = dataset[index].word.value;
-                if (word.length > 3 && word.length <= 7) {
-                    isFound = true;
+        try {
+            if (this.isDemoMode) {
+                return this.createNewSession(this.DEMO_WORD);
+            } else {
+                const dataset = JSON.parse(fs.readFileSync(this.WORDS_FILE_PATH));
+                let isFound = false;
+                let word;
+                while (!isFound) {
+                    const index = Math.floor(Math.random() * dataset.length);
+                    word = dataset[index].word.value;
+                    if (word.length > 3 && word.length <= 7) {
+                        isFound = true;
+                    }
                 }
+                return this.createNewSession(word);
             }
-
-            return this.createNewSession(word);
+        } catch (e) {
+            logger.info("Failed to get random word: " + e);
         }
     }
 
@@ -43,15 +57,11 @@ class GameEngine {
     }
 
     static isSessionValid(id) {
-        try {
-            const sessions = JSON.parse(fs.readFileSync(this.SESSIONS_FILE_PATH));
-            if (!sessions[id]) {
-                return false;
-            }
-            return true;
-        } catch {
-            console.error("Invalid Session", id);
+        const sessions = JSON.parse(fs.readFileSync(this.SESSIONS_FILE_PATH));
+        if (!sessions[id]) {
+            return false;
         }
+        return true;
     }
 
     static createNewSession(word) {
@@ -102,10 +112,12 @@ class GameEngine {
 
     static submitAnswer(sessionId, answer) {
         if (!this.isSessionValid(sessionId)) {
+            logger.info("Invalid Session", sessionId);
             return Promise.reject("Invalid Session");
         }
         return this.isValidWord(answer).then(isValid => {
             if (!isValid) {
+                logger.info("Word not found in dictionary", answer);
                 return Promise.reject("Invalid Word");
             } else {
                 try {
@@ -124,7 +136,7 @@ class GameEngine {
                     }
                     return Promise.resolve(output);
                 } catch (error) {
-                    console.error(error);
+                    logger.info("Failed inside submitAnswer", error);
                 }
             }
         });

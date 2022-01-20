@@ -23,9 +23,15 @@ app.use(cors({
 }));
 
 app.get("/api/healthcheck", (req, res) => {
+    const LOG_FILE_PATH = path.join(__dirname, "../", "info.log");
+    let data;
+    if (fs.existsSync(LOG_FILE_PATH)) {
+        data = fs.readFileSync(LOG_FILE_PATH, "utf8");
+    }
     res.json({
         success: true,
-        message: "We are up and running!"
+        message: "We are up and running!",
+        data: data.split("\r\n") || "Log file do not exist"
     });
 });
 
