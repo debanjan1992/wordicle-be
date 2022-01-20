@@ -68,19 +68,23 @@ class GameEngine {
                     logger.info("Invalid Session", sessionId);
                     done({ success: false, data: "Invalid Session" });
                 } else {
-                    const output = [];
-                    for (let i = 0; i < session.word.length; i++) {
-                        const character = session.word[i];
-                        if (character.toLowerCase() === answer[i].toLowerCase()) {
-                            output[i] = "correct";
-                        } else {
-                            output[i] = "absent";
+                    try {
+                        const output = [];
+                        for (let i = 0; i < session.word.length; i++) {
+                            const character = session.word[i];
+                            if (character.toLowerCase() === answer[i].toLowerCase()) {
+                                output[i] = "correct";
+                            } else {
+                                output[i] = "absent";
+                            }
+                            if (output[i] !== "correct" && session.word.toLowerCase().includes(answer[i].toLowerCase())) {
+                                output[i] = "present";
+                            }
                         }
-                        if (output[i] !== "correct" && session.word.toLowerCase().includes(answer[i].toLowerCase())) {
-                            output[i] = "present";
-                        }
+                        done({ success: true, data: output });
+                    } catch (e) {
+                        done({ success: false, data: "Error occurred" + e.toString() });
                     }
-                    done({ success: true, data: output });
                 }
             });
         }
