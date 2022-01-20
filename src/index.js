@@ -22,17 +22,19 @@ app.use(cors({
     origin: ["http://localhost:3000", "http://192.168.1.107:3000", "https://debanjan1992.github.io"]
 }));
 
-app.get("/api/healthcheck", (req, res) => {
+app.get("/api/logs", (req, res) => {
     const LOG_FILE_PATH = path.join(__dirname, "../", "info.log");
     let data;
     if (fs.existsSync(LOG_FILE_PATH)) {
         data = fs.readFileSync(LOG_FILE_PATH, "utf8");
     }
-    res.json({
-        success: true,
-        message: "We are up and running!",
-        data: data.split("\n") || "Log file do not exist"
-    });
+    res.send(data);
+});
+
+app.get("/api/sessions", (req, res) => {
+    let sessions;
+    sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE_PATH));
+    res.json({ sessions: Object.keys(sessions) });
 });
 
 app.get("/api/reveal", (req, res) => {
