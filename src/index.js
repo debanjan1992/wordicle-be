@@ -46,10 +46,6 @@ app.get("/api/reveal", (req, res) => {
 });
 
 app.get("/api/word", (req, res) => {
-    const sessionId = req.query.sessionId;
-    if (sessionId !== undefined) {
-        GameEngine.clearSession(sessionId);
-    }
     res.json(GameEngine.getRandomWord());
 });
 
