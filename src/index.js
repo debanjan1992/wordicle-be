@@ -24,11 +24,7 @@ app.use(cors({
 
 app.get("/api/logs", (req, res) => {
     const LOG_FILE_PATH = path.join(__dirname, "../", "info.log");
-    let data;
-    if (fs.existsSync(LOG_FILE_PATH)) {
-        data = fs.readFileSync(LOG_FILE_PATH, "utf8");
-    }
-    res.send(data);
+    res.sendFile(LOG_FILE_PATH);
 });
 
 app.get("/api/sessions", (req, res) => {
