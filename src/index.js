@@ -6,7 +6,6 @@ const cors = require('cors');
 const fs = require("fs");
 const path = require("path");
 const SessionsService = require("./services/sessionsService");
-const { nanoid } = require("nanoid");
 dotenv.config();
 
 const SESSIONS_FILE_PATH = path.join(__dirname, "../", "sessions.json");
@@ -21,7 +20,7 @@ const PORT = process.env.PORT;
 const app = express();
 app.use(bodyParser.json());
 app.use(cors({
-    origin: ["http://localhost:3000", "http://192.168.1.107:3000", "https://debanjan1992.github.io"]
+    origin: ["http://localhost:3000", /^[http://192.168]/, "https://debanjan1992.github.io"]
 }));
 
 app.get("/api/logs", (req, res) => {

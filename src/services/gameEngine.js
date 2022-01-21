@@ -60,7 +60,7 @@ class GameEngine {
 
     static submitAnswer(sessionId, answer, done) {
         if (!this.isValidWord(answer)) {
-            logger.info("Word not found in dictionary", answer);
+            logger.info(`Word not found in dictionary - ${sessionId}`, answer);
             done({ success: false, data: "Invalid Word" });
         } else {
             SessionsService.getSessionDetails(sessionId, session => {
@@ -83,7 +83,7 @@ class GameEngine {
                         }
                         done({ success: true, data: output });
                     } catch (e) {
-                        done({ success: false, data: "Error occurred" + e.toString() });
+                        done({ success: false, data: `Error occurred - ${sessionId}` + e.toString() });
                     }
                 }
             });
