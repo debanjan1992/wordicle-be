@@ -6,6 +6,7 @@ const cors = require('cors');
 const fs = require("fs");
 const path = require("path");
 const SessionsService = require("./services/sessionsService");
+const AnalyticsService = require("./services/analyticsService");
 dotenv.config();
 
 const SESSIONS_FILE_PATH = path.join(__dirname, "../", "sessions.json");
@@ -37,9 +38,15 @@ app.get("/api/sessions", (req, res) => {
 app.get("/api/reveal", (req, res) => {
     const sessionId = req.query.sessionId;
     SessionsService.getSessionDetails(sessionId, (data) => {
-        res.json({
-            success: true,
-            data: data.word
+        AnalyticsService.getStatsForWord(data.word, stats => {
+            res.json({
+                success: true,
+                data: data.word,
+                stats: {
+                    totalHits: stats !== null ? stats.count : null,
+                    fastestTimeInMinutes: stats !== null ? stats.time : null
+                }
+            });
         });
     })
 });

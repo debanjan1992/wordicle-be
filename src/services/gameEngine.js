@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const log4js = require("log4js");
 const SessionsService = require("./sessionsService");
+const AnalyticsService = require("./analyticsService");
 log4js.configure({
     appenders: {
         wordicle: { type: "file", filename: "info.log" },
@@ -58,6 +59,15 @@ class GameEngine {
         }
     }
 
+    static isGameComplete = (mapping) => {
+        return mapping.reduce((acc, code) => {
+            if (code === "correct") {
+                acc = acc + 1;
+            }
+            return acc;
+        }, 0) === mapping.length;
+    };
+
     static submitAnswer(sessionId, answer, done) {
         if (!this.isValidWord(answer)) {
             logger.info(`Word not found in dictionary - ${sessionId}`, answer);
@@ -81,8 +91,25 @@ class GameEngine {
                                 output[i] = "present";
                             }
                         }
+
+                        if (this.isGameComplete(output)) {
+                            AnalyticsService.getStatsForWord(answer, stats => {
+                                const timeInMinutes = (new Date().getTime() - +session.timestamp) / (1000 * 60);
+                                if (stats !== null) {
+                                    AnalyticsService.addCountForWord(answer, () => {
+                                        if (timeInMinutes < stats.time && (timeInMinutes * 60) > 30) {
+                                            AnalyticsService.updateFastestTimeForWord(answer, timeInMinutes, () => { });
+                                        }
+                                    });
+                                } else {
+                                    AnalyticsService.addNewWord(answer, timeInMinutes, () => { });
+                                }
+                            });
+                        }
+
                         done({ success: true, data: output });
                     } catch (e) {
+                        console.log(e);
                         done({ success: false, data: `Error occurred - ${sessionId}` + e.toString() });
                     }
                 }
