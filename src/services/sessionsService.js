@@ -30,7 +30,7 @@ class SessionsService {
     }
 
     static getAllSessionDetails(done) {
-        pool.query('SELECT * FROM "public"."' + TABLE_NAME + '" LIMIT 100', [], (error, results) => {
+        pool.query('SELECT * FROM "public"."' + TABLE_NAME + '" LIMIT 10000', [], (error, results) => {
             if (error) {
                 throw error;
             } else {
