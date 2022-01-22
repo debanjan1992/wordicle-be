@@ -1,16 +1,16 @@
 const { nanoid } = require("nanoid");
 const pool = require("./../db");
-const TABLE_NAME = "Sessions";
+const TABLE_NAME = "sessions";
 
 class SessionsService {
     static createNewSession(word, done) {
         const sessionId = nanoid();
-        const timestamp = `${new Date().getTime()}`;
-        pool.query('INSERT INTO "public"."' + TABLE_NAME + '" (id, word, timestamp) VALUES ($1, $2, $3)', [sessionId, word.toUpperCase(), timestamp], (error, results) => {
+        const startTime = `${new Date().getTime()}`;
+        pool.query('INSERT INTO "public"."' + TABLE_NAME + '" (id, word, start_time) VALUES ($1, $2, $3)', [sessionId, word.toUpperCase(), startTime], (error, results) => {
             if (error) {
                 throw error;
             } else {
-                done(sessionId, word.length);
+                done(sessionId, startTime, word.length);
             }
         });
     }
@@ -46,6 +46,17 @@ class SessionsService {
                 throw error;
             } else {
                 done(true);
+            }
+        });
+    }
+
+    static endSession(sessionId, done) {
+        const endTime = `${new Date().getTime()}`;
+        pool.query('UPDATE "public"."' + TABLE_NAME + '" SET end_time = $1 WHERE id = $2', [endTime, sessionId], (error, results) => {
+            if (error) {
+                console.error(error);
+            } else {
+                done(endTime);
             }
         });
     }
