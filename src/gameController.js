@@ -6,7 +6,7 @@ const path = require("path");
 const router = express.Router();
 
 router.get("/newGame", GameEngine.startNewGame);
-router.get("/session/valid", GameEngine.isSessionValid);
+router.get("/session", GameEngine.getSessionDetails);
 router.post("/submit", GameEngine.submitWord);
 
 router.get("/word", (req, res) => { // to delete

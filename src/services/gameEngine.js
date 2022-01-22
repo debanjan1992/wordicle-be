@@ -48,10 +48,21 @@ const getRandomWord = (minLength, maxLength) => {
     }
 };
 
-const isSessionValid = (req, res) => {
+const getSessionDetails = (req, res) => {
     const sessionId = req.query.id;
     SessionsService.getSessionDetails(sessionId, (data) => {
-        res.json({ valid: data !== null });
+        if (data === null) {
+            res.status(404).json({ valid: false, message: "invalid session" });
+        } else {
+            AnalyticsService.getStatsForWord(data.word, stats => {
+                res.json({
+                    valid: true,
+                    length: data.word.length,
+                    startTime: data["start_time"],
+                    bestTime: stats.time
+                });
+            });
+        }
     });
 };
 
@@ -82,12 +93,12 @@ const submitWord = (req, res) => {
 
     if (!isValidWord(userInput)) {
         logger.error(`Word not found in dictionary - ${sessionId}`, userInput);
-        res.status(404).json({ success: false, data: "Invalid word!" });
+        res.status(404).json({ success: false, message: "Invalid word!" });
     } else {
         SessionsService.getSessionDetails(sessionId, session => {
             if (session === null) {
                 logger.error("Invalid Session", sessionId);
-                res.status(404).json({ success: false, data: "Invalid Session" });
+                res.status(404).json({ success: false, message: "Invalid Session" });
             } else {
                 const output = [];
                 for (let i = 0; i < session.word.length; i++) {
@@ -144,7 +155,7 @@ const revealWord = (req, res) => {
 
 module.exports = {
     startNewGame,
-    isSessionValid,
+    getSessionDetails,
     submitWord,
     revealWord
 };
