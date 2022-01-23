@@ -16,9 +16,9 @@ const wordsDB = JSON.parse(
 );
 
 const startNewGame = (req, res) => {
-  const minWordLength = 4;
-  const maxWordLength = 7;
-  let word = getRandomWord(minWordLength, maxWordLength);
+  const minWordLength = process.env.MIN_WORD_LENGTH || 4;
+  const maxWordLength = process.env.MAX_WORD_LENGTH || 7;
+  let word = getRandomWord(+minWordLength, +maxWordLength);
   SessionsService.createNewSession(word, (sessionId, startTime, wordLength) => {
     AnalyticsService.getStatsForWord(word, (stats) => {
       const returnObj = {
