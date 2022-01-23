@@ -59,12 +59,21 @@ const getSessionDetails = (req, res) => {
       res.status(404).json({ valid: false, message: "invalid session" });
     } else {
       AnalyticsService.getStatsForWord(data.word, (stats) => {
-        res.json({
-          valid: true,
-          length: data.word.length,
-          startTime: data["start_time"],
-          bestTime: stats.time,
-        });
+        if (stats !== null) {
+          res.json({
+            valid: true,
+            length: data.word.length,
+            startTime: data["start_time"],
+            bestTime: stats.time,
+          });
+        } else {
+          res.json({
+            valid: true,
+            length: data.word.length,
+            startTime: data["start_time"]
+          });
+        }
+        
       });
     }
   });
