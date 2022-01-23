@@ -42,7 +42,7 @@ const getRandomWord = (minLength, maxLength) => {
     let isFound = false;
     let word;
     while (!isFound) {
-      const index = Math.floor(Math.random() * dataset.length);
+      const index = Math.floor(Math.random() * wordsDB.length);
       word = wordsDB[index].word.value;
       if (word.length >= minLength && word.length <= maxLength) {
         isFound = true;
