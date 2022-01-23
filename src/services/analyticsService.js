@@ -7,7 +7,7 @@ class AnalyticsService {
             if (error) {
                 console.error(error);
             } else {
-                done();
+                done && done();
             }
         });
     }
@@ -16,12 +16,12 @@ class AnalyticsService {
         pool.query('SELECT * FROM "public"."' + TABLE_NAME + '" WHERE word = $1', [word.toUpperCase()], (error, results) => {
             if (error) {
                 console.error(error);
-                done(null);
+                done && done(null);
             } else {
                 if (results.rows.length === 0) {
-                    done(null);
+                    done && done(null);
                 } else {
-                    done(results.rows[0]);
+                    done && done(results.rows[0]);
                 }
             }
         });
@@ -30,14 +30,14 @@ class AnalyticsService {
     static addCountForWord(word, done) {
         this.getStatsForWord(word, stats => {
             if (stats === null) {
-                done();
+                done && done();
             } else {
                 const count = +stats.count + 1;
                 pool.query('UPDATE "public"."' + TABLE_NAME + '" SET count = $1 WHERE word = $2', [count, word.toUpperCase()], (error, results) => {
                     if (error) {
                         console.error(error);
                     } else {
-                        done(results);
+                        done && done(results);
                     }
                 });
             }
@@ -49,7 +49,7 @@ class AnalyticsService {
             if (error) {
                 console.error(error);
             } else {
-                done(results);
+                done && done(results);
             }
         });
     }
