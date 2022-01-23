@@ -180,7 +180,7 @@ const revealWord = (req, res) => {
         data: data.word,
         stats: {
           totalHits: stats !== null ? stats.count : null,
-          bestTime: stats.time,
+          bestTime: stats !== null ? stats.time : null
         },
       });
     });
