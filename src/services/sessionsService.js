@@ -56,7 +56,7 @@ class SessionsService {
             if (error) {
                 console.error(error);
             } else {
-                done(endTime);
+                done && done(endTime);
             }
         });
     }
