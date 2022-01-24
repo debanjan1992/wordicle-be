@@ -70,10 +70,9 @@ const getSessionDetails = (req, res) => {
           res.json({
             valid: true,
             length: data.word.length,
-            startTime: data["start_time"]
+            startTime: data["start_time"],
           });
         }
-        
       });
     }
   });
@@ -103,70 +102,74 @@ const isGameComplete = (mapping) => {
 };
 
 const submitWord = (req, res) => {
-  const userInput = req.body.word;
-  const sessionId = req.body.sessionId;
+  try {
+    const userInput = req.body.word;
+    const sessionId = req.body.sessionId;
 
-  if (!isValidWord(userInput)) {
-    logger.error(`Word not found in dictionary - ${sessionId}`, userInput);
-    res.status(404).json({ success: false, message: "Invalid word!" });
-  } else {
-    SessionsService.getSessionDetails(sessionId, (session) => {
-      if (session === null) {
-        logger.error("Invalid Session", sessionId);
-        res.status(404).json({ success: false, message: "Invalid Session" });
-      } else {
-        const output = [];
-        for (let i = 0; i < session.word.length; i++) {
-          const character = session.word[i];
-          if (character.toLowerCase() === userInput[i].toLowerCase()) {
-            output[i] = "correct";
-          } else {
-            output[i] = "absent";
-          }
-          if (
-            output[i] !== "correct" &&
-            session.word.toLowerCase().includes(userInput[i].toLowerCase())
-          ) {
-            output[i] = "present";
-          }
-        }
-
-        if (isGameComplete(output)) {
-          SessionsService.endSession(sessionId, (endTime) => {
-            AnalyticsService.getStatsForWord(
-              session.word.toUpperCase(),
-              (stats) => {
-                const timeInMinutes =
-                  (+endTime - +session["start_time"]) / (1000 * 60);
-                if (stats !== null) {
-                  AnalyticsService.addCountForWord(session.word, () => {
-                    if (
-                      timeInMinutes < +stats.time &&
-                      timeInMinutes * 60 > 10
-                    ) {
-                      AnalyticsService.updateFastestTimeForWord(
-                        session.word,
-                        timeInMinutes
-                      );
-                    }
-                  });
-                } else {
-                  AnalyticsService.addNewWord(session.word, timeInMinutes);
-                }
-                res.json({
-                  success: true,
-                  data: output,
-                  duration: timeInMinutes,
-                  gameOver: true,
-                });
-              }
-            );
-          });
+    if (!isValidWord(userInput) || userInput === "") {
+      logger.error(`Word not found in dictionary - ${sessionId}`, userInput);
+      res.status(404).json({ success: false, message: "Invalid word!" });
+    } else {
+      SessionsService.getSessionDetails(sessionId, (session) => {
+        if (session === null) {
+          logger.error("Invalid Session", sessionId);
+          res.status(404).json({ success: false, message: "Invalid Session" });
         } else {
-          res.json({ success: true, data: output, gameOver: false });
+          const output = [];
+          for (let i = 0; i < session.word.length; i++) {
+            const character = session.word[i];
+            if (character.toLowerCase() === userInput[i].toLowerCase()) {
+              output[i] = "correct";
+            } else {
+              output[i] = "absent";
+            }
+            if (
+              output[i] !== "correct" &&
+              session.word.toLowerCase().includes(userInput[i].toLowerCase())
+            ) {
+              output[i] = "present";
+            }
+          }
+
+          if (isGameComplete(output)) {
+            SessionsService.endSession(sessionId, (endTime) => {
+              AnalyticsService.getStatsForWord(
+                session.word.toUpperCase(),
+                (stats) => {
+                  const timeInMinutes =
+                    (+endTime - +session["start_time"]) / (1000 * 60);
+                  if (stats !== null) {
+                    AnalyticsService.addCountForWord(session.word, () => {
+                      if (
+                        timeInMinutes < +stats.time &&
+                        timeInMinutes * 60 > 10
+                      ) {
+                        AnalyticsService.updateFastestTimeForWord(
+                          session.word,
+                          timeInMinutes
+                        );
+                      }
+                    });
+                  } else {
+                    AnalyticsService.addNewWord(session.word, timeInMinutes);
+                  }
+                  res.json({
+                    success: true,
+                    data: output,
+                    duration: timeInMinutes,
+                    gameOver: true,
+                  });
+                }
+              );
+            });
+          } else {
+            res.json({ success: true, data: output, gameOver: false });
+          }
         }
-      }
-    });
+      });
+    }
+  } catch (e) {
+    logger.error("Failed during submit word", e);
   }
 };
 
@@ -180,7 +183,7 @@ const revealWord = (req, res) => {
         data: data.word,
         stats: {
           totalHits: stats !== null ? stats.count : null,
-          bestTime: stats !== null ? stats.time : null
+          bestTime: stats !== null ? stats.time : null,
         },
       });
     });
