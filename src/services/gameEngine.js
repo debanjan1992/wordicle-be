@@ -52,11 +52,18 @@ const getRandomWord = (minLength, maxLength) => {
   }
 };
 
+const hasSessionExpired = (sessionStartTime) => {
+  const timeElapsedInSeconds = (new Date().getTime() - sessionStartTime) / 1000;
+  return timeElapsedInSeconds > 10;
+};
+
 const getSessionDetails = (req, res) => {
   const sessionId = req.query.id;
   SessionsService.getSessionDetails(sessionId, (data) => {
     if (data === null) {
       res.status(404).json({ valid: false, message: "invalid session" });
+    } else if (hasSessionExpired(+data["start_time"])) {
+      res.status(404).json({ valid: false, message: "session expired" });
     } else {
       AnalyticsService.getStatsForWord(data.word, (stats) => {
         if (stats !== null) {
@@ -113,7 +120,9 @@ const submitWord = (req, res) => {
       SessionsService.getSessionDetails(sessionId, (session) => {
         if (session === null) {
           logger.error("Invalid Session", sessionId);
-          res.status(404).json({ success: false, message: "Invalid Session" });
+          res.status(404).json({ success: false, message: "invalid Session" });
+        } else if (hasSessionExpired(session["start_time"])) {
+          res.status(404).json({ success: false, message: "session expired" });
         } else {
           const output = [];
           for (let i = 0; i < session.word.length; i++) {
