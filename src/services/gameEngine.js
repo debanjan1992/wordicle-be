@@ -54,7 +54,7 @@ const getRandomWord = (minLength, maxLength) => {
 
 const hasSessionExpired = (sessionStartTime) => {
   const timeElapsedInSeconds = (new Date().getTime() - sessionStartTime) / 1000;
-  return timeElapsedInSeconds > (30 * 60);
+  return timeElapsedInSeconds > (15 * 60);
 };
 
 const getSessionDetails = (req, res) => {
@@ -115,12 +115,12 @@ const submitWord = (req, res) => {
 
     if (!isValidWord(userInput) || userInput === "") {
       logger.error(`Word not found in dictionary - ${sessionId}`, userInput);
-      res.status(404).json({ success: false, message: "Invalid word!" });
+      res.status(404).json({ success: false, message: "invalid word" });
     } else {
       SessionsService.getSessionDetails(sessionId, (session) => {
         if (session === null) {
           logger.error("Invalid Session", sessionId);
-          res.status(404).json({ success: false, message: "invalid Session" });
+          res.status(404).json({ success: false, message: "invalid session" });
         } else if (hasSessionExpired(session["start_time"])) {
           res.status(404).json({ success: false, message: "session expired" });
         } else {
