@@ -54,7 +54,7 @@ const getRandomWord = (minLength, maxLength) => {
 
 const hasSessionExpired = (sessionStartTime) => {
   const timeElapsedInSeconds = (new Date().getTime() - sessionStartTime) / 1000;
-  return timeElapsedInSeconds > (60 * 15);
+  return timeElapsedInSeconds > (30 * 60);
 };
 
 const getSessionDetails = (req, res) => {
