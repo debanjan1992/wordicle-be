@@ -3,7 +3,7 @@ const TABLE_NAME = "analytics";
 
 class AnalyticsService {
     static addNewWord(word, timeTaken, done) {
-        pool.query('INSERT INTO "public"."' + TABLE_NAME + '" (word, time, count) VALUES ($1, $2, $3)', [word.toUpperCase(), timeTaken, 1], (error, results) => {
+        pool.query('INSERT INTO "public"."' + TABLE_NAME + '" (word, best_time, count, avg_time) VALUES ($1, $2, $3, $2)', [word.toUpperCase(), timeTaken, 1], (error, results) => {
             if (error) {
                 console.error(error);
             } else {
@@ -27,25 +27,8 @@ class AnalyticsService {
         });
     }
 
-    static addCountForWord(word, done) {
-        this.getStatsForWord(word, stats => {
-            if (stats === null) {
-                done && done();
-            } else {
-                const count = +stats.count + 1;
-                pool.query('UPDATE "public"."' + TABLE_NAME + '" SET count = $1 WHERE word = $2', [count, word.toUpperCase()], (error, results) => {
-                    if (error) {
-                        console.error(error);
-                    } else {
-                        done && done(results);
-                    }
-                });
-            }
-        });
-    }
-
-    static updateFastestTimeForWord(word, fastestTimeInMinutes, done) {
-        pool.query('UPDATE "public"."' + TABLE_NAME + '" SET time = $1 WHERE word = $2', [fastestTimeInMinutes, word.toUpperCase()], (error, results) => {
+    static updateForWord(word, count, bestTime, avgTime, done) {
+        pool.query('UPDATE "public"."' + TABLE_NAME + '" SET count = $1, best_time = $2, avg_time = $3 WHERE word = $4', [count, bestTime, avgTime, word.toUpperCase()], (error, results) => {
             if (error) {
                 console.error(error);
             } else {

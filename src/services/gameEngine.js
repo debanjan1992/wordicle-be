@@ -27,8 +27,7 @@ const startNewGame = (req, res) => {
         length: wordLength,
       };
       if (stats !== null) {
-        returnObj.bestTime = stats.time;
-        returnObj.counter = stats.counter;
+        returnObj.bestTime = stats["best_time"];
       }
       res.json(returnObj);
     });
@@ -54,7 +53,7 @@ const getRandomWord = (minLength, maxLength) => {
 
 const hasSessionExpired = (sessionStartTime) => {
   const timeElapsedInSeconds = (new Date().getTime() - sessionStartTime) / 1000;
-  return timeElapsedInSeconds > (15 * 60);
+  return timeElapsedInSeconds > 15 * 60;
 };
 
 const getSessionDetails = (req, res) => {
@@ -71,7 +70,7 @@ const getSessionDetails = (req, res) => {
             valid: true,
             length: data.word.length,
             startTime: data["start_time"],
-            bestTime: stats.time,
+            bestTime: stats["best_time"],
           });
         } else {
           res.json({
@@ -145,27 +144,45 @@ const submitWord = (req, res) => {
               AnalyticsService.getStatsForWord(
                 session.word.toUpperCase(),
                 (stats) => {
-                  const timeInMinutes =
+                  const gameDurationInMinutes =
                     (+endTime - +session["start_time"]) / (1000 * 60);
                   if (stats !== null) {
-                    AnalyticsService.addCountForWord(session.word, () => {
-                      if (
-                        timeInMinutes < +stats.time &&
-                        timeInMinutes * 60 > 10
-                      ) {
-                        AnalyticsService.updateFastestTimeForWord(
-                          session.word,
-                          timeInMinutes
-                        );
-                      }
-                    });
+                    let totalTime = +stats.count * stats["avg_time"];
+                    const avgTime =
+                      (totalTime + gameDurationInMinutes) / (+stats.count + 1);
+                    console.log("Total Time", totalTime);
+                    console.log("Game Duration", gameDurationInMinutes);
+                    console.log("Count", +stats.count);
+                    console.log("New Count", +stats.count + 1);
+                    console.log("Avg Time", avgTime);
+                    if (
+                      gameDurationInMinutes < +stats["best_time"] &&
+                      gameDurationInMinutes * 60 > 10
+                    ) {
+                      AnalyticsService.updateForWord(
+                        session.word,
+                        +stats.count + 1,
+                        gameDurationInMinutes,
+                        avgTime
+                      );
+                    } else {
+                      AnalyticsService.updateForWord(
+                        session.word,
+                        +stats.count + 1,
+                        +stats["best_time"],
+                        avgTime
+                      );
+                    }
                   } else {
-                    AnalyticsService.addNewWord(session.word, timeInMinutes);
+                    AnalyticsService.addNewWord(
+                      session.word,
+                      gameDurationInMinutes
+                    );
                   }
                   res.json({
                     success: true,
                     data: output,
-                    duration: timeInMinutes,
+                    duration: gameDurationInMinutes,
                     gameOver: true,
                   });
                 }
@@ -191,8 +208,9 @@ const revealWord = (req, res) => {
         success: true,
         data: data.word,
         stats: {
-          totalHits: stats !== null ? stats.count : null,
-          bestTime: stats !== null ? stats.time : null,
+          totalHits: stats !== null ? +stats.count : null,
+          bestTime: stats !== null ? +stats["best_time"] : null,
+          avgTime: stats !== null ? +stats["avg_time"] : null,
         },
       });
     });
