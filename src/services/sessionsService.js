@@ -40,8 +40,8 @@ class SessionsService {
     }
 
     static deleteSessions(sessionIds, done) {
-        const dollarSyntax = Array.from({ length: 8 }, (k, x) => '$' + (x + 1)).join(", ");
-        pool.query(`DELETE FROM "public"."${TABLE_NAME}" WHERE id IN [${dollarSyntax}]`, sessionIds, (error, results) => {
+        const dollarSyntax = Array.from({ length: sessionIds.length }, (k, x) => '$' + (x + 1)).join(", ");
+        pool.query(`DELETE FROM "public"."${TABLE_NAME}" WHERE id IN (${dollarSyntax})`, sessionIds, (error, results) => {
             if (error) {
                 throw error;
             } else {
