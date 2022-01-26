@@ -150,11 +150,6 @@ const submitWord = (req, res) => {
                     let totalTime = +stats.count * stats["avg_time"];
                     const avgTime =
                       (totalTime + gameDurationInMinutes) / (+stats.count + 1);
-                    console.log("Total Time", totalTime);
-                    console.log("Game Duration", gameDurationInMinutes);
-                    console.log("Count", +stats.count);
-                    console.log("New Count", +stats.count + 1);
-                    console.log("Avg Time", avgTime);
                     if (
                       gameDurationInMinutes < +stats["best_time"] &&
                       gameDurationInMinutes * 60 > 10
