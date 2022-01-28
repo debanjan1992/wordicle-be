@@ -107,6 +107,58 @@ const isGameComplete = (mapping) => {
   );
 };
 
+const getLetterCountDistributionMapForWord = (word) => {
+  if (!word || !word.length) {
+    return;
+  }
+  const distributionMap = {};
+  word
+    .toUpperCase()
+    .split("")
+    .forEach((letter) => {
+      if (!distributionMap[letter]) {
+        distributionMap[letter] = 1;
+      } else {
+        distributionMap[letter] = distributionMap[letter] + 1;
+      }
+    });
+  return distributionMap;
+};
+
+const generateColorMap = (userInput, solution) => {
+  userInput = userInput.toUpperCase();
+  solution = solution.toUpperCase();
+  const userInputMap = getLetterCountDistributionMapForWord(userInput);
+  const solutionMap = getLetterCountDistributionMapForWord(solution);
+  const colorMap = Array.from({ length: userInput.length }, () => "");
+  userInput.split("").forEach((inputLetter, index) => {
+    if (inputLetter === solution[index]) {
+      colorMap[index] = "correct";
+      userInputMap[inputLetter] = userInputMap[inputLetter] - 1;
+      solutionMap[inputLetter] = solutionMap[inputLetter] - 1;
+    } else {
+      colorMap[index] = "absent";
+    }
+  });
+  return colorMap.map((code, index) => {
+    const inputLetter = userInput[index];
+    if (code !== "absent") {
+      return code;
+    } else if (
+      userInputMap[inputLetter] &&
+      solutionMap[inputLetter] &&
+      userInputMap[inputLetter] !== 0 &&
+      solutionMap[inputLetter] !== 0 &&
+      Math.abs(userInputMap[inputLetter] - solutionMap[inputLetter]) >= 0
+    ) {
+      userInputMap[inputLetter] = userInputMap[inputLetter] - 1;
+      solutionMap[inputLetter] = solutionMap[inputLetter] - 1;
+      return "present";
+    }
+    return code;
+  });
+};
+
 const submitWord = (req, res) => {
   try {
     const userInput = req.body.word;
@@ -123,21 +175,22 @@ const submitWord = (req, res) => {
         } else if (hasSessionExpired(session["start_time"])) {
           res.status(404).json({ success: false, message: "session expired" });
         } else {
-          const output = [];
-          for (let i = 0; i < session.word.length; i++) {
-            const character = session.word[i];
-            if (character.toLowerCase() === userInput[i].toLowerCase()) {
-              output[i] = "correct";
-            } else {
-              output[i] = "absent";
-            }
-            if (
-              output[i] !== "correct" &&
-              session.word.toLowerCase().includes(userInput[i].toLowerCase())
-            ) {
-              output[i] = "present";
-            }
-          }
+          // const output = [];
+          // for (let i = 0; i < session.word.length; i++) {
+          //   const character = session.word[i];
+          //   if (character.toLowerCase() === userInput[i].toLowerCase()) {
+          //     output[i] = "correct";
+          //   } else {
+          //     output[i] = "absent";
+          //   }
+          //   if (
+          //     output[i] !== "correct" &&
+          //     session.word.toLowerCase().includes(userInput[i].toLowerCase())
+          //   ) {
+          //     output[i] = "present";
+          //   }
+          // }
+          const output = generateColorMap(userInput, session.word);
 
           if (isGameComplete(output)) {
             SessionsService.endSession(sessionId, (endTime) => {
